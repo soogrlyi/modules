@@ -1,0 +1,61 @@
+import java.awt.*;
+import java.awt.event.*;
+
+public class EmployeeForm extends Frame implements ActionListener {
+
+    private TextField nameField, idField, deptField;
+    private Label outputLabel;
+
+    public EmployeeForm() {
+        setTitle("Employee Information Form");
+        setSize(400, 300);
+        setLayout(new GridLayout(5, 2));
+        setResizable(false);
+
+        Label nameLabel = new Label("Name:");
+        nameField = new TextField();
+
+        Label idLabel = new Label("Employee ID:");
+        idField = new TextField();
+
+        Label deptLabel = new Label("Department:");
+        deptField = new TextField();
+
+        Button submitButton = new Button("Submit");
+        submitButton.addActionListener(this);
+
+        outputLabel = new Label("");
+
+        add(nameLabel);
+        add(nameField);
+
+        add(idLabel);
+        add(idField);
+
+        add(deptLabel);
+        add(deptField); 
+
+        add(submitButton);
+        add(outputLabel);
+
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                dispose();
+            }
+        });
+
+        setVisible(true);
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        String name = nameField.getText();
+        String id = idField.getText();
+        String department = deptField.getText();
+
+        outputLabel.setText("Employee: " + name + ", ID: " + id + ", Dept: " + department);
+    }
+
+    public static void main(String[] args) {
+        new EmployeeForm();
+    }
+}
