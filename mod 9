@@ -1,0 +1,70 @@
+public class Main {
+    public static void main(String[] args) {
+        Owner alice = new Owner("Alice");
+        Owner bob = new Owner("Bob");
+
+        Animal myDog = new Dog("Buddy", alice);
+        Animal myCat = new Cat("Whiskers", bob);
+
+        myDog.speak();       // Polymorphism in action
+        myCat.speak();       
+        myDog.showInfo();    // Composition: shows owner
+        myCat.showInfo();
+    }
+}
+
+// Superclass
+class Animal {
+    protected String name;
+    protected Owner owner;  // Composition: Animal "has-an" Owner
+
+    public Animal(String name, Owner owner) {
+        this.name = name;
+        this.owner = owner;
+    }
+
+    public void speak() {
+        System.out.println("Some generic animal sound");
+    }
+
+    public void showInfo() {
+        System.out.println(name + " is owned by " + owner.getName());
+    }
+}
+
+// Subclass 1
+class Dog extends Animal {
+    public Dog(String name, Owner owner) {
+        super(name, owner);
+    }
+
+    @Override
+    public void speak() {
+        System.out.println(name + " says: Woof!");
+    }
+}
+
+// Subclass 2
+class Cat extends Animal {
+    public Cat(String name, Owner owner) {
+        super(name, owner);
+    }
+
+    @Override
+    public void speak() {
+        System.out.println(name + " says: Meow!");
+    }
+}
+
+// Separate class used via composition
+class Owner {
+    private String name;
+
+    public Owner(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+}
