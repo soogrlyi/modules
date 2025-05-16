@@ -1,0 +1,187 @@
+import java.util.*;
+import java.util.function.*;
+import java.util.stream.*;
+
+// ===== Product and Subclasses =====
+
+class Product {
+    protected int id;
+    protected String name;
+    protected double price;
+    protected String category;
+
+    public Product(int id, String name, double price, String category) {
+        this.id = id;
+        this.name = name;
+        this.price = price;
+        this.category = category;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String toString() {
+        return name + " - $" + price + " [" + category + "]";
+    }
+}
+
+class Electronics extends Product {
+    private int warrantyYears;
+
+    public Electronics(int id, String name, double price, int warrantyYears) {
+        super(id, name, price, "Electronics");
+        this.warrantyYears = warrantyYears;
+    }
+}
+
+class Clothing extends Product {
+    private String size;
+
+    public Clothing(int id, String name, double price, String size) {
+        super(id, name, price, "Clothing");
+        this.size = size;
+    }
+}
+
+class Grocery extends Product {
+    private String expirationDate;
+
+    public Grocery(int id, String name, double price, String expirationDate) {
+        super(id, name, price, "Grocery");
+        this.expirationDate = expirationDate;
+    }
+}
+
+// ===== User and Subclasses =====
+
+class User {
+    protected String username;
+    protected String role;
+
+    public User(String username, String role) {
+        this.username = username;
+        this.role = role;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+}
+
+class Customer extends User {
+    private List<Product> cart;
+
+    public Customer(String username) {
+        super(username, "Customer");
+        this.cart = new ArrayList<>();
+    }
+
+    public void addToCart(Product product) {
+        cart.add(product);
+    }
+
+    public List<Product> getCart() {
+        return cart;
+    }
+}
+
+class Admin extends User {
+    public Admin(String username) {
+        super(username, "Admin");
+    }
+
+    public void addProduct(List<Product> inventory, Product product) {
+        inventory.add(product);
+    }
+}
+
+// ===== Order =====
+
+class Order {
+    private Customer customer;
+    private List<Product> items;
+    private double taxRate = 0.08;
+    private double shippingFee = 5.99;
+
+    public Order(Customer customer, List<Product> items) {
+        this.customer = customer;
+        this.items = items;
+    }
+
+    public double calculateTotal() {
+        // Subtotal using stream
+        double subtotal = items.stream()
+                               .mapToDouble(Product::getPrice)
+                               .sum();
+
+        // Tax using lambda
+        DoubleUnaryOperator taxCalc = amt -> amt * taxRate;
+        double tax = taxCalc.applyAsDouble(subtotal);
+
+        // Shipping using lambda
+        DoubleBinaryOperator shippingTotal = (sub, ship) -> sub + tax + ship;
+
+        return shippingTotal.applyAsDouble(subtotal, shippingFee);
+    }
+
+    public String toString() {
+        return "Order for " + customer.getUsername() + ": $" + String.format("%.2f", calculateTotal());
+    }
+}
+
+// ===== Main Simulation =====
+
+public class ECommercePlatform {
+    public static void main(String[] args) {
+        // Sample inventory
+        List<Product> inventory = new ArrayList<>();
+        Admin admin = new Admin("admin1");
+
+        admin.addProduct(inventory, new Electronics(1, "Laptop", 1200, 2));
+        admin.addProduct(inventory, new Clothing(2, "T-Shirt", 20, "M"));
+        admin.addProduct(inventory, new Grocery(3, "Milk", 3.5, "2025-06-01"));
+        admin.addProduct(inventory, new Clothing(4, "Jeans", 40, "L"));
+
+        // Create a customer and add products to cart
+        Customer customer = new Customer("jane_doe");
+        customer.addToCart(inventory.get(0)); // Laptop
+        customer.addToCart(inventory.get(2)); // Milk
+
+        // Create order and print total
+        Order order = new Order(customer, customer.getCart());
+        System.out.println(order);
+
+        // ===== Lambdas and Streams =====
+
+        // Filter: Show only electronics
+        System.out.println("\nFiltered - Electronics:");
+        inventory.stream()
+                 .filter(p -> p.getCategory().equals("Electronics"))
+                 .forEach(System.out::println);
+
+        // Apply 10% discount lambda
+        Function<Product, Double> discount = p -> p.getPrice() * 0.9;
+        System.out.println("\nDiscounted Price for " + inventory.get(1).getName() + ": $" + String.format("%.2f", discount.apply(inventory.get(1))));
+
+        // Search: All products with "shirt" in the name
+        System.out.println("\nSearch - Contains 'shirt':");
+        inventory.stream()
+                 .filter(p -> p.getName().toLowerCase().contains("shirt"))
+                 .forEach(System.out::println);
+
+        // Sort by price ascending
+        System.out.println("\nSorted by Price:");
+        inventory.stream()
+                 .sorted(Comparator.comparingDouble(Product::getPrice))
+                 .forEach(System.out::println);
+    }
+}
